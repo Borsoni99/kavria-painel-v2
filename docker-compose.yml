@@ -1,9 +1,9 @@
-# Painel v2 em produção (AWS Lightsail, mesmo servidor do painel v1). Rodar a partir de /opt/kavria2:
+# Painel v2 em produção (AWS Lightsail, mesmo servidor do painel v1). Rodar a partir de /opt/kavria2 (o serviço NÃO pode se chamar "app": na rede do v1 esse nome é do painel v1):
 #   sudo docker compose --env-file server.env up -d --build
 # Não tem Caddy próprio: entra na rede do painel v1 (kavria_default) e o Caddy do v1 atende
 # painel2.kavria.com.br encaminhando para kavria2-app:8000 (HTTPS automático lá).
 services:
-  app:
+  kavria2:
     build: .
     image: kavria-painel-v2
     container_name: kavria2-app
