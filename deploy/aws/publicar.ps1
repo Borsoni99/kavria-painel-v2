@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-  Atualiza o painel em produção (https://painel.kavria.com.br) com o código e o .env deste PC.
+  Atualiza o painel em produção (https://painel2.kavria.com.br) com o código e o .env deste PC.
 
 .DESCRIPTION
   1) Salva as mudanças num commit e envia ao GitHub (repositório privado), para o servidor sempre
@@ -74,7 +74,7 @@ if ($changes) {
   if (-not $Mensagem) {
     try { $Mensagem = Read-Host "Descreva a mudança em poucas palavras (Enter = genérica)" } catch { $Mensagem = "" }
   }
-  if (-not $Mensagem) { $Mensagem = "Atualização do painel ($(Get-Date -Format 'dd/MM/yyyy HH:mm'))" }
+  if (-not $Mensagem) { $Mensagem = "Atualização do painel v2 ($(Get-Date -Format 'dd/MM/yyyy HH:mm'))" }
   Invoke-Git commit -q -m $Mensagem
   Write-Host "==> Commit: $(& git -C $Root log -1 --format='%h %s')"
 }
@@ -90,4 +90,4 @@ Invoke-Git push -q origin main
 $Key = Join-Path $env:USERPROFILE ".ssh\kavria-lightsail.pem"
 if (-not (Test-Path $Key)) { $Key = Join-Path $HOME "Downloads\LightsailDefaultKey-sa-east-1.pem" }
 
-& (Join-Path $PSScriptRoot "deploy.ps1") -Ip 54.232.124.83 -Key $Key -Domain painel.kavria.com.br
+& (Join-Path $PSScriptRoot "deploy.ps1") -Ip 54.232.124.83 -Key $Key -Domain painel2.kavria.com.br

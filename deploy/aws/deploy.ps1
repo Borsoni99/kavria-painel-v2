@@ -31,7 +31,7 @@ param(
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $Remote = "ubuntu@$Ip"
-$Work = Join-Path $env:TEMP "kavria-deploy"
+$Work = Join-Path $env:TEMP "kavria2-deploy"
 
 if (-not (Test-Path (Join-Path $Root ".env"))) { throw "Não encontrei o .env em $Root" }
 if ($SendDatabase) {
@@ -71,7 +71,7 @@ try {
   # Lista explícita do que vai para o servidor. Exclusões do tar do Windows valem em qualquer nível
   # (um "--exclude=assets" levaria junto frontend/src/assets, com a logo e os sons).
   $include = @("backend", "frontend", "deploy", "Dockerfile", "docker-compose.yml", ".dockerignore", ".gitattributes", ".env.example", "README.md")
-  & tar -czf kavria.tgz `
+  & tar -czf kavria2.tgz `
     --exclude=backend/.venv --exclude=backend/data --exclude=backend/.pytest_cache `
     --exclude=frontend/node_modules --exclude=frontend/dist --exclude=__pycache__ `
     --exclude=.env --exclude=server.env --exclude=*.db --exclude=*.db-wal --exclude=*.db-shm `
@@ -88,25 +88,25 @@ try {
   }
 
   Write-Host "==> Enviando código e configuração"
-  Send-Files @("kavria.tgz", "app.env", "server.env")
-  Invoke-Remote ("sudo mkdir -p /opt/kavria/data && sudo tar -xzf /tmp/kavria.tgz -C /opt/kavria " +
-    "&& sudo install -m 600 /tmp/app.env /opt/kavria/.env && sudo install -m 644 /tmp/server.env /opt/kavria/server.env " +
-    "&& sudo chown -R 1000:1000 /opt/kavria/data && rm -f /tmp/kavria.tgz /tmp/app.env /tmp/server.env")
+  Send-Files @("kavria2.tgz", "app.env", "server.env")
+  Invoke-Remote ("sudo mkdir -p /opt/kavria2/data && sudo tar -xzf /tmp/kavria2.tgz -C /opt/kavria2 " +
+    "&& sudo install -m 600 /tmp/app.env /opt/kavria2/.env && sudo install -m 644 /tmp/server.env /opt/kavria2/server.env " +
+    "&& sudo chown -R 1000:1000 /opt/kavria2/data && rm -f /tmp/kavria2.tgz /tmp/app.env /tmp/server.env")
 
   if ($SendDatabase) {
     Write-Host "==> Copiando o banco deste PC (cópia consistente)"
     $py = Join-Path $Root "backend\.venv\Scripts\python.exe"
-    $db = Join-Path $Root "backend\data\kavria.db"
-    & $py -c "import sqlite3,sys; s=sqlite3.connect(sys.argv[1]); d=sqlite3.connect(sys.argv[2]); s.backup(d); d.close(); s.close()" $db "kavria.db"
+    $db = Join-Path $Root "backend\data\kavria2.db"
+    & $py -c "import sqlite3,sys; s=sqlite3.connect(sys.argv[1]); d=sqlite3.connect(sys.argv[2]); s.backup(d); d.close(); s.close()" $db "kavria2.db"
     if ($LASTEXITCODE -ne 0) { throw "Falha ao copiar o banco" }
-    Send-Files @("kavria.db")
-    Invoke-Remote ("cd /opt/kavria && (sudo docker compose --env-file server.env stop app || true) " +
-      "&& sudo rm -f data/kavria.db-wal data/kavria.db-shm && sudo mv /tmp/kavria.db data/kavria.db " +
+    Send-Files @("kavria2.db")
+    Invoke-Remote ("cd /opt/kavria2 && (sudo docker compose --env-file server.env stop app || true) " +
+      "&& sudo rm -f data/kavria2.db-wal data/kavria2.db-shm && sudo mv /tmp/kavria2.db data/kavria2.db " +
       "&& sudo chown -R 1000:1000 data")
   }
 
   Write-Host "==> Construindo e subindo (o primeiro build leva ~5 min)"
-  Invoke-Remote "cd /opt/kavria && sudo docker compose --env-file server.env up -d --build && sudo docker compose --env-file server.env ps"
+  Invoke-Remote "cd /opt/kavria2 && sudo docker compose --env-file server.env up -d --build && sudo docker compose --env-file server.env ps"
 }
 finally {
   Pop-Location

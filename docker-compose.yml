@@ -1,44 +1,29 @@
-# Produção (AWS Lightsail). Rodar a partir de /opt/kavria:
+# Painel v2 em produção (AWS Lightsail, mesmo servidor do painel v1). Rodar a partir de /opt/kavria2:
 #   sudo docker compose --env-file server.env up -d --build
-# server.env só contém DOMAIN=painel.seudominio.com.br; os segredos ficam em .env (lido pelo app).
+# Não tem Caddy próprio: entra na rede do painel v1 (kavria_default) e o Caddy do v1 atende
+# painel2.kavria.com.br encaminhando para kavria2-app:8000 (HTTPS automático lá).
 services:
   app:
     build: .
-    image: kavria-painel
+    image: kavria-painel-v2
+    container_name: kavria2-app
     restart: unless-stopped
     env_file: .env
     environment:
-      # No servidor, os endereços públicos vêm do domínio — o resto do .env é o mesmo do PC
       PUBLIC_BASE_URL: "https://${DOMAIN:?defina DOMAIN em server.env}"
-      ML_REDIRECT_URI: "https://${DOMAIN}/oauth/mercadolivre/callback"
-      DATABASE_URL: "sqlite+aiosqlite:///./data/kavria.db"
+      DATABASE_URL: "sqlite+aiosqlite:///./data/kavria2.db"
       WORKERS_ENABLED: "true"
     volumes:
       - ./data:/app/backend/data
     expose:
       - "8000"
+    networks:
+      - kavria
     logging:
       driver: json-file
       options: { max-size: "10m", max-file: "5" }
 
-  caddy:
-    image: caddy:2.8.4
-    restart: unless-stopped
-    depends_on:
-      - app
-    ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      DOMAIN: "${DOMAIN}"
-    volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    logging:
-      driver: json-file
-      options: { max-size: "10m", max-file: "3" }
-
-volumes:
-  caddy_data: {}
-  caddy_config: {}
+networks:
+  kavria:
+    external: true
+    name: kavria_default
