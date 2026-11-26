@@ -1,0 +1,5 @@
+# HTTPS automático (Let's Encrypt) para o domínio do painel.
+# O Caddy repassa SSE (text/event-stream) sem buffer, então a TV recebe as vendas na hora.
+{$DOMAIN} {
+	reverse_proxy app:8000
+}

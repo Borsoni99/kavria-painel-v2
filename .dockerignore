@@ -1,0 +1,14 @@
+# Nunca entram na imagem: segredos, banco, ambientes locais e artefatos
+.env
+.env.*
+server.env
+.git
+.qodo
+.vscode
+assets
+backend/.venv
+backend/data
+backend/.pytest_cache
+**/__pycache__
+frontend/node_modules
+frontend/dist

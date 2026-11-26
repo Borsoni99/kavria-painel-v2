@@ -1,0 +1,31 @@
+# Segredos — nunca commitar
+.env
+.env.*
+!.env.example
+server.env
+*.pem
+
+# Dados locais (banco SQLite com tokens criptografados, logs, relatórios, backups)
+backend/data/
+backups/
+*.db
+*.db-wal
+*.db-shm
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node / front
+node_modules/
+frontend/dist/
+
+# Ferramentas
+.qodo/
+.vscode/
+.idea/
+
+# Artefatos de build do TypeScript
+*.tsbuildinfo
